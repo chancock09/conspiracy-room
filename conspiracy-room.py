@@ -1,7 +1,37 @@
 # import the necessary packages
 import numpy as np
 import cv2
- 
+import pygame
+from datetime import datetime, timedelta
+
+pygame.init()
+
+# config #
+
+min_conspiracy_peeps = 2
+stop_delay_seconds = 2
+
+########## 
+
+def start_music():
+    pygame.mixer.music.set_volume(100)
+
+def stop_music():
+    global music_last_stopped_at
+
+    stop_delay = datetime.now() - timedelta(seconds=stop_delay_seconds)
+
+    if music_last_stopped_at < stop_delay:
+        pygame.mixer.music.set_volume(0)
+        music_last_stopped_at = datetime.now()
+    else:
+        pass
+
+pygame.mixer.music.load("x.mp3")
+pygame.mixer.music.set_volume(0)
+pygame.mixer.music.play(-1)
+music_last_stopped_at = datetime.now()
+
 # initialize the HOG descriptor/person detector
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -37,6 +67,11 @@ while(True):
         # display the detected boxes in the colour picture
         cv2.rectangle(frame, (xA, yA), (xB, yB),
                           (0, 255, 0), 2)
+
+    if len(boxes) >= min_conspiracy_peeps:
+        start_music()
+    else:
+        stop_music()
     
     # Write the output video 
     out.write(frame.astype('uint8'))
