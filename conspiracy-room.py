@@ -10,27 +10,53 @@ pygame.init()
 
 min_conspiracy_peeps = 2
 stop_delay_seconds = 2
+start_delay_seconds = 5
+reset_delay_seconds = 30
 
 ########## 
 
-def start_music():
+# music #
+
+music_last_started_at = datetime.now()
+music_last_stopped_at = datetime.now()
+music_last_reset_at = None
+
+def reload_music():
+    global music_last_reset_at
+
+    pygame.mixer.music.load("x.mp3")
     pygame.mixer.music.set_volume(100)
+    pygame.mixer.music.play(-1)
+    music_last_reset_at = datetime.now()
+
+def start_music():
+    global music_last_started_at
+    global music_last_reset_at
+
+    start_delay = datetime.now() - timedelta(seconds=start_delay_seconds)
+    reset_delay = datetime.now() - timedelta(seconds=reset_delay_seconds)
+
+    if not music_last_reset_at or music_last_reset_at < reset_delay:
+        reload_music()
+    elif music_last_started_at < start_delay:
+        pygame.mixer.music.set_volume(100)
+        music_last_started_at = datetime.now()
+    else:
+        pass
 
 def stop_music():
     global music_last_stopped_at
+    global music_last_started_at
 
     stop_delay = datetime.now() - timedelta(seconds=stop_delay_seconds)
 
-    if music_last_stopped_at < stop_delay:
+    if music_last_started_at < stop_delay and music_last_stopped_at < stop_delay:
         pygame.mixer.music.set_volume(0)
         music_last_stopped_at = datetime.now()
     else:
         pass
 
-pygame.mixer.music.load("x.mp3")
-pygame.mixer.music.set_volume(0)
-pygame.mixer.music.play(-1)
-music_last_stopped_at = datetime.now()
+##########
 
 # initialize the HOG descriptor/person detector
 hog = cv2.HOGDescriptor()
